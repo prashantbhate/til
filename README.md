@@ -12,4 +12,5 @@ So this is an attempt to capture and retain such daily discoveries in a concise 
 
 ## Topics
 
-- [xml diff](xml-diff.md)
+- [xml diff : Textually comapre two xml documents ](xml-diff.md)
+- [gitall : Run same git command in multiple git repositories ](gitall.md)
