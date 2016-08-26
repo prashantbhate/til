@@ -14,3 +14,4 @@ So this is an attempt to capture and retain such daily discoveries in a concise 
 
 - [xml diff : Textually comapre two xml documents ](xml-diff.md)
 - [gitall : Run same git command in multiple git repositories ](gitall.md)
+- [git alias : Git alias to list git aliases](git-alias.md)
