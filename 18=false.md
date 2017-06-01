@@ -215,10 +215,104 @@ Before I start my testlet me add a Java Exception Breakpoint for 'java.lang.Numb
 
 so that it halts when above exception is thrown. Its a pretty neat trick as it will not stop when NumberFormatException is thrown for other reasons.
 
+Include 
+
+>-Denable.jul.slf4j.bridge=true
+
 Let me trigger
 ```shell
 ➜  test-tool git:(master) ✗ jb '**/a-xxx-xx-masked.story' 
 ```
 and wait for debugger to hit this point (I would disable all other breakpoints for now)
 
+Ok from `java.util.logging.Logger#log()` I could extract below message
+
+```
+59E4A0E9 Debug: Session Attributes: 
+sdu=8192, tdu=32767
+nt: host=127.0.0.1, port=1521
+    socket_timeout=60000, socketOptions={18=false, 17=0, 2=60000, 1=NO, 0=YES}
+    socket=Socket[addr=/127.0.0.1,port=1521,localport=52163]
+
+ntInputStream : java.net.SocketInputStream@6734a1d2
+ntOutputStream: java.net.SocketOutputStream@306c16ed
+nsInputStream : oracle.net.ns.NetInputStream@8553a71
+nsOutputStream: oracle.net.ns.NetOutputStream@136fd4fd
+
+Client Profile: {oracle.net.kerberos5_mutual_authentication=false, oracle.net.authentication_services=(), oracle.net.crypto_seed=, oracle.net.encryption_types_client=(), oracle.net.encryption_client=ACCEPTED, oracle.net.crypto_checksum_client=ACCEPTED, oracle.net.crypto_checksum_types_client=()}
+
+Connection Options: host=null, port=0, sid=null, protocol=TCP, service_name=devd
+addr=(ADDRESS=(PROTOCOL=TCP)(HOST=127.0.0.1)(PORT=1521))
+conn_data=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=127.0.0.1)(PORT=1521))(CONNECT_DATA=(CID=(PROGRAM=JDBC Thin Client)(HOST=__jdbc__)(USER=pb))(SERVICE_NAME=devd)(CID=(PROGRAM=JDBC Thin Client)(HOST=__jdbc__)(USER=pb))))
+sslServerCertDN=null, origSSLServerCertDN=null, origServiceName=devd, origSid=null, done=true
+
+onBreakReset=false, dataEOF=false, negotiatedOptions=0x0, connected=false
+```
+
+I think I know what the issue is.
+
+JUL LogHandlers Like java.util.logging.ConsoleHandler can be configured to use custom formatter (defaults to java.util.logging.SimpleFormatter)
+
+`java.util.logging.StreamHandler#publish`
+
+> msg = getFormatter().format(record);
+
+However SLF4JBridgeHandler uses MessageFormat to format the message if Log record provides parameters
+
+
+```
+        Object[] params = record.getParameters();
+        // avoid formatting when there are no or 0 parameters. see also
+        // http://bugzilla.slf4j.org/show_bug.cgi?id=212
+        if (params != null && params.length > 0) {
+            message = MessageFormat.format(message, params);
+        }
+```
+And oracle logging 1 parameter (traceId) however Message being logged is not a valid MessageFormat as it contains `{18=false}` which MessageFormat thinks could be a placeholder posision index 9but in reality its not) but unable to parse it into one.
+
+Ok quickest way I found to fix this issue is to just extend and override `callLocationAwareLogger()` . Instead of calling SLF4JBridgeHandler.install().
+
+```
+		//SLF4JBridgeHandler.install();
+		LogManager.getLogManager().getLogger("").addHandler(new SLF4JBridgeHandler(){
+			private final String FQCN = Logger.class.getName();
+			private final int TRACE_LEVEL_THRESHOLD = Level.FINEST.intValue();
+			private final int DEBUG_LEVEL_THRESHOLD = Level.FINE.intValue();
+			private final int CONFIG_LEVEL_THRESHOLD = Level.CONFIG.intValue();
+			private final int INFO_LEVEL_THRESHOLD = Level.INFO.intValue();
+			private final int WARN_LEVEL_THRESHOLD = Level.WARNING.intValue();
+
+			protected void callLocationAwareLogger(LocationAwareLogger lal, LogRecord record) {
+				int julLevelValue = record.getLevel().intValue();
+				byte slf4jLevel;
+				if(julLevelValue <= TRACE_LEVEL_THRESHOLD) {
+					slf4jLevel = 0;
+				} else if(julLevelValue <= DEBUG_LEVEL_THRESHOLD) {
+					slf4jLevel = 10;
+				} else if(julLevelValue <= CONFIG_LEVEL_THRESHOLD) {
+					slf4jLevel = 20;
+				} else if(julLevelValue <= INFO_LEVEL_THRESHOLD) {
+					slf4jLevel = 20;
+				} else if(julLevelValue <= WARN_LEVEL_THRESHOLD) {
+					slf4jLevel = 30;
+				} else {
+					slf4jLevel = 40;
+				}
+
+				String i18nMessage = record.getMessage();
+				lal.log((Marker)null, FQCN, slf4jLevel, i18nMessage, (Object[])null, record.getThrown());
+			}
+		});
+
+```
+
+While I was doing this I noticed that SLF4J Bridge maps JUL Level.CONFIG TO slf4jLevel DEBUG  , however Oracle Logs ALL SQLs at Level.CONFIG. So to in order to see only SQLs in the log I had to map Level.CONFIG to  slf4jLevel INFO
+
+>} else if(julLevelValue <= CONFIG_LEVEL_THRESHOLD) {
+>  slf4jLevel = 20;
+
+With all this hack finally I managed to get the Oracle SQLs with Stack Trace as bonus in the Logs
+
+This is a good time to take a break as breakpoint has been triggered !
+Although I know its a long way to go..
 
