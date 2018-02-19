@@ -20,7 +20,7 @@ to generate images in various format like `svg`
 this is all good but dependency tree generates one dot file per module, hence it doesnt give a bird's eye view. 
 So all these dot files had to be combined to generate an uber dot file
 
-It cries out loud for some cleaver scripting.
+It cries out loud for some clever scripting.
 
 
 Here is what I did.
