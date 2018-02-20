@@ -21,10 +21,10 @@ Below are key ingredients required to cook GCP load balancer !
 |  what | used in | Desc |
 | -------------| ------------- | ------------- |
 | FrontEnds | all |  one or more Host+ports that  client uses to connect |
-| Host and path rules |HTTP(S) Global load balancing | used by HTTP(S) load balancer to route request based on path rules |
+| Host and path rules/url map |HTTP(S) Global load balancing | used by HTTP(S) load balancer to route request based on path and content rules |
 |Backend services| all  external | one or more backend services each backend service contains one or more instance groups with load balance configurations like health check  |
 |Regional Backend services| Regional Internal TCP lb |contains one or more backend services from same region each backend service contains one or more instance groups with load balance configurations like health check, |
-|Target pool| TCP LB |Target pool is a kind of backend used by tcp forwarding rules|
 |global forwarding rule| HTTP(S) Global load balancing | forwards External IP:port to a target-proxy|
+|forwarding rule| TCP LB | forwards External IP:port to a target pool|
+|Target pool| TCP LB |Target pool is a kind of backend used by tcp forwarding rules|
 |target proxy| HTTP(S) Global load balancing |A target receives traffic from a forwarding rule and points to a URL map|
-|url map|HTTP(S) Global load balancing | url map contains rules that are used by content based loadbal to route requests|
