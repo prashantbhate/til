@@ -1,4 +1,6 @@
 
+# Node Pod Container names
+
 
 ```
 #list all nodes with all pods all container
@@ -23,7 +25,13 @@ kubectl cluster-info
 kubectl get pods --all-namespaces -o=custom-columns=NODE:.spec.nodeName,NODE_IP:status.hostIP,POD:metadata.name,POD_IP:status.podIP --sort-by=.spec.nodeName
 
 
+```
 
 
+# Complete details
 
 ```
+#dumps complete details into a directory 
+kubectl cluster-info dump --all-namespaces --output-directory=kudump
+```
+
