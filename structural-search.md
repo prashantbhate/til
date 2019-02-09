@@ -1,6 +1,6 @@
 # Problem
 
-I wanted to search for all `@Autowired` fields of type that implemented `java.rmi.Remote` in the current project/repo.
+I wanted to search for all fields of type that implemented `java.rmi.Remote` in the current project/repo.
 
 # Background
 
@@ -50,14 +50,24 @@ $Annotation$ : text=.*Autowired, count=[1,∞]
 
 Added some groovy code to check the the DeclaredType implemented `java.rmi.Remote` , script allows raw access to underlying PSI elements
 See http://www.jetbrains.org/intellij/sdk/docs/basics/psi_cookbook.html for more info
+
+
 ~~~
-$FieldType$ : script=
-def t = __context__.type.resolve();
-def list = t.interfaces.toList().collect{it.qualifiedName};
-def s = list.join(", ");
-def str = t.qualifiedName+':'+s+'\n';
-s.contains("java.rmi.Remote")
+def list = __context__.type.superTypes.findAll {it.name.contains("Remote")}
+if(list.size()>0){
+def sb = new StringBuilder("")
+.append(__context__.parent.parent.qualifiedName)
+.append("      ")
+.append(__context__.type.resolve().qualifiedName)
+__log__.info(sb)
+return true;
+}
 ~~~
 **Make sure** to expand the script entry field to allow multiline 
 
-The structural search now listed all `@Autowired` fields with DeclaredType that implemented `java.rmi.Remote`
+The structural search now listed all fields with DeclaredType that implemented `java.rmi.Remote`
+
+
+# PSI Viewer
+
+To understand the structure of java file Refer to https://www.jetbrains.com/help/idea/psi-viewer.html
