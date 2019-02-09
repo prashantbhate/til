@@ -2,9 +2,9 @@
 I wanted to remove all unused dependencies from pom.xml
 
 dependency:analyse plugin did what was needed but only partially !
-It just prints the result, its painstaking task to search for those xml tags and remove them
+It just prints the result, its painstaking task to search for those <dependency> manually  and remove them from pom.xml
 
-Cooked up below script to do the magic, 
+So I Cooked up below script to do the magic, 
 
 
 ````
