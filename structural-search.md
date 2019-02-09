@@ -76,6 +76,11 @@ return true;
 }
 ~~~
 
+Or in short
+~~~groovy
+__context__.type.superTypes.findAll {it.name.contains("Remote")}.size()>0
+~~~
+
 **Make sure** to expand the script entry field to allow multiline 
 
 The structural search now listed all fields with DeclaredType that implemented `java.rmi.Remote`
