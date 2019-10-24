@@ -11,6 +11,7 @@ cat ${FEATURE}00.feature $i >$i.new
 mv $i.new $i
 done
 rm ${FEATURE}00.feature
+cd -
 }
 
 ````
