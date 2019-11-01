@@ -35,3 +35,26 @@ kubectl get pods --all-namespaces -o=custom-columns=NODE:.spec.nodeName,NODE_IP:
 kubectl cluster-info dump --all-namespaces --output-directory=kudump
 ```
 
+
+# Wait for pods to be terminated
+
+```
+until [ $(kubectl get po|grep Terminating|wc -l ) -eq 0 ] ;do \
+	echo "Wait for pods to be terminated:"; \
+	kubectl get po | grep Terminating; \
+	sleep 1; \
+	echo .....; \
+	done
+```
+
+# Wait for pods to be Ready
+
+```
+EXPECTED_PODS=7
+until [ $(kubectl get po | grep -E '(\d+)/\1' | wc -l ) -eq $EXPECTED_PODS ] ;do \
+	echo "Wait for pods to be ready:"; \
+	kubectl get po | grep -vE '(\d+)/\1'; \
+	sleep 1; \
+	echo .....; \
+	done
+```
