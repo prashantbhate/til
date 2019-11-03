@@ -50,8 +50,7 @@ until [ $(kubectl get po|grep Terminating|wc -l ) -eq 0 ] ;do \
 # Wait for pods to be Ready
 
 ```
-EXPECTED_PODS=7
-until [ $(kubectl get po | grep -E '(\d+)/\1' | wc -l ) -eq $EXPECTED_PODS ] ;do \
+while [ $(kubectl get po --no-headers | grep -v -E '(\d+)/\1' | wc -l ) -ne 0 ] ;do \
 	echo "Wait for pods to be ready:"; \
 	kubectl get po | grep -vE '(\d+)/\1'; \
 	sleep 1; \
