@@ -16,3 +16,16 @@ View service graph
 ```
 istioctl dashboard kiali
 ```
+
+Prometheus monitoring
+
+istioctl dashboard prometheus
+
+Use below queries
+```
+sum(rate(container_cpu_usage_seconds_total{container_name!="", namespace="default"}[5m])) by (pod_name)
+```
+
+```
+sum(rate(container_cpu_usage_seconds_total{container_name!="", namespace="default"}[5m])) by (container_name)
+```
