@@ -27,3 +27,13 @@ for cache_id in $(gh api /repos/{owner}/{repo}/actions/caches | jq -r '.actions_
   gh api --method DELETE /repos/{owner}/{repo}/actions/caches/$cache_id --silent
 done
 ```
+
+Below command helps to delete all those failed job
+
+```
+gh run list --status failure --json databaseId | jq -r '.[].databaseId' | while read id; do
+    gh run delete "$id"
+    #slow down (rate limit)
+    sleep 1 
+done
+```
