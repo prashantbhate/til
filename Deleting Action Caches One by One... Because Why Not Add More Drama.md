@@ -11,14 +11,14 @@ with a a unique key, and key gets computed in each run, and key has to be exactl
 
 See https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/caching-dependencies-to-speed-up-workflows
 
-# Cleanup
+# Problem
 
 Github page to cleanup was very friendly for one who has all the time in the world to go oneby one and "delete" going past the confirmation alert each time, thats fun right?! WRONG!
 It Could Have Provided a Multiselect and delete all like any SaneUI may offer
 
-Luckily  (gh+sh) commands finds its way
-
 # Automate
+
+Luckily  (gh+sh) commands finds its way
 
 This goes over caches one by one and delete them
 ```
