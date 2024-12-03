@@ -1,0 +1,17 @@
+While fixing an issue with the github actions workflow, the pipeline job ran for couple of times (100s!)
+before I could realise (and fix the issue) 
+that the actions cache was generating unique key for each run and it was creating multiple keys on each run
+IT WAS TOO LATE !
+
+Github page to cleanup was very friendly for one who has all the time in the world to go oneby one and "delete" going past the confirmation alert each time, thats fun right?! WRONG!
+It Could Have Provided a Multiselect and delete all like any SaneUI may offer
+
+Luckily  (gh+sh) commands finds its way
+
+This goes over caches one by one and delete them
+```
+for cache_id in $(gh api /repos/{owner}/{repo}/actions/caches | jq -r '.actions_caches[].id'); do
+  echo deleting $cache_id
+  gh api --method DELETE /repos/{owner}/{repo}/actions/caches/$cache_id --silent
+done
+```
