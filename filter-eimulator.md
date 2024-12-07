@@ -18,7 +18,7 @@ get_ios_devices() {
          .value[]|select(
             (.name | contains($model)) and 
             (.isAvailable == true)
-        )| "\(.udid)-\(.name)-(iOS \($parent.key|split("SimRuntime.iOS-")[1] ))"
+        )| "\(.udid),\(.name),(iOS \($parent.key|split("SimRuntime.iOS-")[1] ))"
     '
 }
 
